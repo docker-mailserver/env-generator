@@ -1,2 +1,3 @@
-# env-file-parser
-Parser for .env files to automatically generate a documentation written in Markdown
+# A `*.env` Parser to Generate Markdown Documentation
+
+`env-file-parser` is a parser for `*.env` files, generating documentation written in Markdown.

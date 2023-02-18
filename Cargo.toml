@@ -1,0 +1,32 @@
+[package]
+name = "env-file-parser"
+version = "0.1.0"
+edition = "2021"
+
+authors = ['Georg Lauterbach (@georglauterbach)']
+
+description = 'Parser for .env files to automatically generate a documentation written in Markdown'
+license = 'GPL-3.0'
+readme = '/README.md'
+
+homepage = 'https://github.com/docker-mailserver/env-file-parser'
+repository = 'https://github.com/docker-mailserver/env-file-parser'
+
+keywords = [
+  'parser',
+  'environment',
+  'markdown'
+]
+
+categories = [
+  'config',
+]
+
+publish = false
+
+[dependencies]
+anyhow = "1.0.69"
+clap = { version = "4.1.6", features = ["derive"] }
+clap-verbosity-flag = "2.0.0"
+serde = { version = "1.0.152", features = ["derive"] }
+serde_yaml = "0.9.17"

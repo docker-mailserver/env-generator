@@ -1,0 +1,14 @@
+# For a reference to this file, see
+# https://rust-lang.github.io/rustup/overrides.html#the-toolchain-file
+
+# Rust toolchain releases can be found under
+# https://rust-lang.github.io/rustup-components-history/
+
+# Make sure to propagate changes to the release channel to
+# 1. `.github/workflows/checks.yml`
+# 2. `.github/workflows/security.yml`
+# 3. `.github/workflows/tests.yml`
+
+[toolchain]
+channel = 'nightly-2023-02-18'
+components = [ 'cargo', 'clippy', 'rustc', 'rustfmt', 'rust-std' ]
