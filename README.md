@@ -1,3 +1,6 @@
-# A `*.env` Parser to Generate Markdown Documentation
+# A YAML Parser to Generate Markdown Documentation & `.env` Files
 
-`env-file-parser` is a parser for `*.env` files, generating documentation written in Markdown.
+This repository contains a parser for YAML files that generates
+
+1. a documentation written in Markdown
+2. a `.env` file one can use inside containers to provide environment variables

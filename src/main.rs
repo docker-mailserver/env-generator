@@ -33,7 +33,10 @@
 // covered previously
 #![deny(missing_debug_implementations)]
 
-//! TODO
+//! A parser for YAML files that generates
+//!
+//! 1. a documentation written in Markdown
+//! 2. a `.env` file one can use inside containers to provide environment variables
 
 mod arguments;
 mod variables;
@@ -51,53 +54,40 @@ fn main() -> anyhow::Result<()>
 	))?;
 
 	let variables: Vec<variables::Variable> =
-		serde_yaml::from_str(input.as_str()).context("Could not serialize contents")?;
+		serde_yaml::from_str(&input).context("Could not serialize contents")?;
 
-	println!("{:#?}", &variables);
-
-	let mut output_content_markdown = String::with_capacity(8192);
 	let mut output_content_env = String::with_capacity(8192);
+	output_content_env.push_str(r###"# DOCUMENTATION FOR THESE VARIABLES IS FOUND UNDER
+# https://docker-mailserver.github.io/docker-mailserver/edge/config/environment/
+
+"###);
+
+	let mut output_content_markdown = String::with_capacity(262144);
+	output_content_markdown.push_str(r###"---
+title: Environment Variables
+---
+
+!!! attention
+
+    If an option doesn't work as documented here, check if the version of the documentation fits the image version of DMS you are running. See [our tagging convention](../usage/#available-images-tags-tagging-convention).
+"###);
+
 	for variable in variables {
 		// ? HANDLE MARKDOWN ----------------------------------------
 
-		let mut heading = format!("\n##### `{}`", variable.get_name());
-
-		if variable.is_deprecated() {
-			heading.push_str(" \\[DEPRECATED\\]");
-		} else if variable.is_removed() {
-			heading.push_str(" \\[REMOVED\\]\n");
-			output_content_markdown.push_str(heading.as_str());
+		let heading = variable.format_heading();
+		if variable.is_removed() {
+			output_content_markdown.push_str(&heading);
 			continue;
 		}
 
-		heading.push_str(format!("\n\n{}\n", variable.get_description()).as_str());
-		if !heading.ends_with("\n\n") {
-			heading.push('\n');
-		}
+		let description = variable.format_description();
 
 		let mut iterated_values = vec![];
 		let mut stringified_values = String::new();
 		for value in variable.values() {
 			iterated_values.push(value.get_actual_value_unformatted());
-			stringified_values.push_str(
-				format!(
-					"\n- {} => {}",
-					value.get_actual_value_formatted(),
-					value.get_description()
-				)
-				.as_str(),
-			);
-		}
-
-		if !variables::Value::string_equals_unset_value(variable.get_default_unformatted())
-			&& !iterated_values.contains(&variable.get_default_unformatted())
-		{
-			anyhow::bail!(format!(
-				"Default value '{}' not contained in values '{:?}' for variable '{}'",
-				variable.get_default_formatted(),
-				iterated_values,
-				variable.get_name()
-			));
+			stringified_values.push_str(&value.format());
 		}
 
 		if variables::Value::string_equals_arbitrary_value(variable.get_default_unformatted()) {
@@ -107,11 +97,21 @@ fn main() -> anyhow::Result<()>
 			));
 		}
 
-		let default = format!("Default: {}\n", variable.get_default_formatted());
+		if !variables::Value::string_equals_unset_value(variable.get_default_unformatted())
+			&& !iterated_values.contains(&variable.get_default_unformatted())
+		{
+			anyhow::bail!(format!(
+				"Default value '{}' not contained in values '{:?}' for variable '{}'",
+				variable.get_default_unformatted(),
+				iterated_values,
+				variable.get_name()
+			));
+		}
 
-		output_content_markdown.push_str(heading.as_str());
-		output_content_markdown.push_str(default.as_str());
-		output_content_markdown.push_str(stringified_values.as_str());
+		output_content_markdown.push_str(&heading);
+		output_content_markdown.push_str(&description);
+		output_content_markdown.push_str(&variable.format_default());
+		output_content_markdown.push_str(&stringified_values);
 
 		if !output_content_markdown.ends_with('\n') {
 			output_content_markdown.push('\n');
@@ -120,10 +120,7 @@ fn main() -> anyhow::Result<()>
 		// ? HANDLE .ENV --------------------------------------------
 
 		if !variable.is_removed() {
-			output_content_env.push_str(
-				format!("{}={}\n", variable.get_name(), variable.get_default_for_env())
-					.as_str(),
-			);
+			output_content_env.push_str(&variable.format_for_env());
 		}
 	}
 

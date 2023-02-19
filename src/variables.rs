@@ -20,7 +20,7 @@ pub struct Value
 impl Value
 {
 	/// Returns the actual value formatted for Markdown.
-	pub fn get_actual_value_formatted(&self) -> String
+	fn get_actual_value_formatted(&self) -> String
 	{
 		if self.is_unset() {
 			"unset".to_owned()
@@ -40,14 +40,23 @@ impl Value
 	/// Static function to check whether a string resembled the "arbitrary" value.
 	pub fn string_equals_arbitrary_value(string: &str) -> bool { string == "*" }
 
-	/// Returns the description for the value.
-	pub fn get_description(&self) -> &str { &self.description }
-
 	/// Check whether the value is the "unset" value.
-	pub fn is_unset(&self) -> bool { self.value.is_empty() }
+	fn is_unset(&self) -> bool { self.value.is_empty() }
 
 	/// Check whether the value is the "arbitrary" value.
-	pub fn is_arbitrary(&self) -> bool { self.value == "*" }
+	fn is_arbitrary(&self) -> bool { self.value == "*" }
+
+	/// Format a value into a single line (with one newline at the end) for a markdown
+	/// documentation.
+	pub fn format(&self) -> String
+	{
+		let mut line = format!("- {} => {}", self.get_actual_value_formatted(), self.description);
+		if !line.ends_with('\n') {
+			line.push('\n');
+		}
+
+		line
+	}
 }
 
 /// The state a variable can be in. This is used when a variable has become deprecated or
@@ -83,11 +92,8 @@ impl Variable
 	/// Return the name of the variable.
 	pub fn get_name(&self) -> &str { &self.name }
 
-	/// Return the description of the variable.
-	pub fn get_description(&self) -> &str { &self.description }
-
 	/// Return the default value of the variable formatted for Markdown.
-	pub fn get_default_formatted(&self) -> String
+	fn get_default_formatted(&self) -> String
 	{
 		if Value::string_equals_unset_value(&self.default) {
 			"unset (i.e. unused)".to_owned()
@@ -100,7 +106,7 @@ impl Variable
 	pub fn get_default_unformatted(&self) -> &str { &self.default }
 
 	/// Return the default value of the variable formatted for a `+.env` file.
-	pub fn get_default_for_env(&self) -> &str
+	fn get_default_for_env(&self) -> &str
 	{
 		if Value::string_equals_unset_value(&self.default) {
 			""
@@ -110,11 +116,69 @@ impl Variable
 	}
 
 	/// Check whether the variable is deprecated.
-	pub fn is_deprecated(&self) -> bool { self.state == Some(State::Deprecated) }
+	fn is_deprecated(&self) -> bool { self.state == Some(State::Deprecated) }
 
 	/// Check whether the variable was removed.
 	pub fn is_removed(&self) -> bool { self.state == Some(State::Removed) }
 
 	/// Return an iterator over the values a variable can have.
 	pub fn values(&self) -> impl Iterator<Item = &Value> { self.values.iter() }
+
+	/// Checks whether a string ends with two newlines, and if not, it will append the
+	/// newlines.
+	fn check_double_newline_ending(string: &mut String)
+	{
+		if !string.ends_with("\n\n") {
+			string.push('\n');
+		}
+
+		if !string.ends_with("\n\n") {
+			string.push('\n');
+		}
+	}
+
+	/// Provides the text one wants when displaying the heading for this variable in
+	/// Markdown. This function ensures the string that is returned ends with two
+	/// newlines. This function will also prepend a single newline before the heading.
+	pub fn format_heading(&self) -> String
+	{
+		let mut heading = format!("\n##### `{}`", self.name);
+		if self.is_deprecated() {
+			heading.push_str(" \\[DEPRECATED\\]\n");
+		} else if self.is_removed() {
+			heading.push_str(" \\[REMOVED\\]\n");
+		}
+
+		if !self.is_removed() {
+			Self::check_double_newline_ending(&mut heading);
+		}
+
+		heading
+	}
+
+	/// Provides the text one wants when displaying the description for this variable
+	/// in Markdown. This function ensures the string that is returned ends with two
+	/// newlines.
+	pub fn format_description(&self) -> String
+	{
+		let mut description = self.description.to_string();
+		Self::check_double_newline_ending(&mut description);
+		description
+	}
+
+	/// Provides the text one wants when displaying the default value for this
+	/// variable in Markdown. This function ensures the string that is returned ends
+	/// with two newlines.
+	pub fn format_default(&self) -> String
+	{
+		let mut default = format!("Default: {}\n", self.get_default_formatted());
+		Self::check_double_newline_ending(&mut default);
+		default
+	}
+
+	/// Provides the text one wants when using this variable in a `.env` file.
+	pub fn format_for_env(&self) -> String
+	{
+		format!("{}={}\n", self.get_name(), self.get_default_for_env())
+	}
 }
