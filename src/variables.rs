@@ -25,7 +25,7 @@ impl Value
 		if self.is_unset() {
 			"unset".to_owned()
 		} else if self.is_arbitrary() {
-			"\\*".to_owned()
+			"arbitrary".to_owned()
 		} else {
 			format!("`{}`", &self.value)
 		}
@@ -48,9 +48,15 @@ impl Value
 
 	/// Format a value into a single line (with one newline at the end) for a markdown
 	/// documentation.
-	pub fn format(&self) -> String
+	pub fn format(&self, beginning: char) -> String
 	{
-		let mut line = format!("- {} => {}", self.get_actual_value_formatted(), self.description);
+		let mut line = format!(
+			"{} {} => {}",
+			beginning,
+			self.get_actual_value_formatted(),
+			self.description
+		);
+
 		if !line.ends_with('\n') {
 			line.push('\n');
 		}
@@ -179,6 +185,6 @@ impl Variable
 	/// Provides the text one wants when using this variable in a `.env` file.
 	pub fn format_for_env(&self) -> String
 	{
-		format!("{}={}\n", self.get_name(), self.get_default_for_env())
+		format!("{}={}\n\n", self.get_name(), self.get_default_for_env())
 	}
 }

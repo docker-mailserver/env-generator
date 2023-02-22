@@ -87,7 +87,7 @@ title: Environment Variables
 		let mut stringified_values = String::new();
 		for value in variable.values() {
 			iterated_values.push(value.get_actual_value_unformatted());
-			stringified_values.push_str(&value.format());
+			stringified_values.push_str(&value.format('-'));
 		}
 
 		if variables::Value::string_equals_arbitrary_value(variable.get_default_unformatted()) {
@@ -120,6 +120,11 @@ title: Environment Variables
 		// ? HANDLE .ENV --------------------------------------------
 
 		if !variable.is_removed() {
+			let mut stringified_values = String::new();
+			for value in variable.values() {
+				stringified_values.push_str(&value.format('#'));
+			}
+			output_content_env.push_str(&stringified_values);
 			output_content_env.push_str(&variable.format_for_env());
 		}
 	}
