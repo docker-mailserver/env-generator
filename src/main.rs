@@ -53,8 +53,10 @@ fn main() -> anyhow::Result<()>
 		arguments.get_input_file_path()
 	))?;
 
-	let variables: Vec<variables::Variable> =
-		serde_yaml::from_str(&input).context("Could not serialize contents")?;
+	let variables: Vec<variables::Variable> = serde_yaml::from_str(&input).context(format!(
+		"Could not serialize contents in '{}'",
+		arguments.get_input_file_path()
+	))?;
 
 	let mut output_content_env = String::with_capacity(8192);
 	let mut output_content_markdown = String::with_capacity(262144);

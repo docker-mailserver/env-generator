@@ -7,4 +7,4 @@ This repository contains a parser for YAML files that generates
 
 ## Usage
 
-Run `make run`. The directory `content` contains the YAMl files that are parsed.
+Run `make run`. The directory `content` contains the YAMl files that are parsed. The naming scheme is: `<PRECEDENCE>-<SECTION NAME>.yaml`.

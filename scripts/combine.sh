@@ -17,7 +17,7 @@ do
   then
     BASENAME=$(basename "${YAML_FILE}")
     BASENAME=${BASENAME%.yaml} ; BASENAME=${BASENAME%.yml} ; BASENAME=${BASENAME,,} ;
-    cargo run -- "${YAML_FILE}" "${DIRECTORY}/${BASENAME}.md" "${DIRECTORY}/${BASENAME}.env"
+    cargo run --quiet -- "${YAML_FILE}" "${DIRECTORY}/${BASENAME}.md" "${DIRECTORY}/${BASENAME}.env"
   else
     # echo "'${YAML_FILE}' is not a YAML file" >&2
     continue
@@ -26,6 +26,8 @@ done
 
 MD_FINAL="${DIRECTORY}/combined.md.unfinished"
 ENV_FINAL="${DIRECTORY}/combined.env.unfinished"
+
+rm -f "${MD_FINAL%.unfinished}" "${ENV_FINAL%.unfinished}"
 touch "${MD_FINAL}" "${ENV_FINAL}"
 
 cat >"${MD_FINAL}" << EOM
