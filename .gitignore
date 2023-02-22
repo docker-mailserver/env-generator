@@ -17,6 +17,6 @@ Cargo.lock
 ###  Rust  ######################################
 #################################################
 
-tests/*.sample.*
-!tests/env.sample.yaml
+content/*.md
+content/*.env
 

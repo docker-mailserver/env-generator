@@ -57,20 +57,7 @@ fn main() -> anyhow::Result<()>
 		serde_yaml::from_str(&input).context("Could not serialize contents")?;
 
 	let mut output_content_env = String::with_capacity(8192);
-	output_content_env.push_str(r###"# DOCUMENTATION FOR THESE VARIABLES IS FOUND UNDER
-# https://docker-mailserver.github.io/docker-mailserver/edge/config/environment/
-
-"###);
-
 	let mut output_content_markdown = String::with_capacity(262144);
-	output_content_markdown.push_str(r###"---
-title: Environment Variables
----
-
-!!! attention
-
-    If an option doesn't work as documented here, check if the version of the documentation fits the image version of DMS you are running. See [our tagging convention](../usage/#available-images-tags-tagging-convention).
-"###);
 
 	for variable in variables {
 		// ? HANDLE MARKDOWN ----------------------------------------

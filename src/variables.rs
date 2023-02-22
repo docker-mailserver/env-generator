@@ -148,7 +148,7 @@ impl Variable
 	/// newlines. This function will also prepend a single newline before the heading.
 	pub fn format_heading(&self) -> String
 	{
-		let mut heading = format!("\n##### `{}`", self.name);
+		let mut heading = format!("\n### `{}`", self.name);
 		if self.is_deprecated() {
 			heading.push_str(" \\[DEPRECATED\\]\n");
 		} else if self.is_removed() {
